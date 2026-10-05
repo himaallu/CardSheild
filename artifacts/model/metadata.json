@@ -34,7 +34,7 @@
   "model_name": "cardshield",
   "model_version": "1",
   "review_cost": 5.0,
-  "run_id": "cd9f9579d3404473b8a4f0cf212696c1",
+  "run_id": "3940b0a196634fac82833e33fed899c1",
   "test_cost_table": {
     "amount_rule": 7604.33,
     "approve_all": 7729.26,
@@ -47,6 +47,6 @@
     "recall": 0.8,
     "roc_auc": 0.9677320536033424
   },
-  "threshold": 0.02893553339353532,
-  "trained_at": "2026-10-05T21:19:19+00:00"
+  "threshold": 0.028935533393627835,
+  "trained_at": "2026-10-05T21:33:08+00:00"
 }
