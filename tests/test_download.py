@@ -27,3 +27,10 @@ def test_verify_accepts_published_counts() -> None:
 def test_verify_rejects_wrong_counts(synthetic_raw: pd.DataFrame) -> None:
     with pytest.raises(ValueError, match="dataset mismatch"):
         verify(synthetic_raw)
+
+
+def test_verify_rejects_unsorted_time() -> None:
+    labels = [1] * EXPECTED_FRAUDS + [0] * (EXPECTED_ROWS - EXPECTED_FRAUDS)
+    frame = pd.DataFrame({LABEL_COL: labels, "Time": range(EXPECTED_ROWS, 0, -1)})
+    with pytest.raises(ValueError, match="not sorted"):
+        verify(frame)

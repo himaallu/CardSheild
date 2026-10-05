@@ -10,8 +10,11 @@ ARTIFACTS_DIR: Final = ROOT / "artifacts"
 MODEL_DIR: Final = ARTIFACTS_DIR / "model"
 REPORTS_DIR: Final = ROOT / "reports"
 
-# Dataset: ULB Credit Card Fraud Detection (OpenML id 1597).
-OPENML_DATA_ID: Final = 1597
+# Dataset: ULB Credit Card Fraud Detection, original CSV with the Time column.
+# OpenML id 1597 has identical V1..V28/Amount/Class values but drops Time, which the
+# time-based split and the 30-field API need, so we use the TensorFlow-hosted mirror.
+DATA_URL: Final = "https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv"
+DATA_SHA256: Final = "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89"
 EXPECTED_ROWS: Final = 284_807
 EXPECTED_FRAUDS: Final = 492
 

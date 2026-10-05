@@ -20,7 +20,7 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 - [x] Package skeleton matching the repo layout in `docs/PRD.md`
 - [x] `.gitignore` (data/, mlruns/, mlflow.db, reports/, .venv/, __pycache__/)
 - [x] `Makefile` with all targets from the PRD (stubs are fine for later sprints)
-- [ ] `scripts/download_data.py`: OpenML `data_id=1597`, save to `data/creditcard.csv`, assert 284,807 rows and 492 frauds *(written and unit-tested; real download blocked by sandbox network policy, run `make data` where openml.org is reachable)*
+- [x] `scripts/download_data.py`: original CSV (TensorFlow mirror, SHA-256 pinned; OpenML 1597 drops `Time`), save to `data/creditcard.csv`, assert 284,807 rows and 492 frauds
 
 **Check:** `make data` prints row and fraud counts that match. First commit.
 
