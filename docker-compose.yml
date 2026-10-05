@@ -13,7 +13,8 @@ services:
       dockerfile: mlflow.Dockerfile
     image: cardshield-mlflow
     ports:
-      - "5000:5000"
+      # Host port 5001: macOS AirPlay Receiver already listens on 5000.
+      - "5001:5000"
     # mlflow.db stores absolute host paths for artifacts, so mount mlruns/ at the same path.
     volumes:
       - ./mlflow.db:/mlflow/mlflow.db

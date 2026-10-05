@@ -214,7 +214,7 @@ cardshield/
 | `make replay` / `make replay-drift` | Stream test traffic (normal / drifted) |
 | `make drift` | Build the drift report |
 | `make bench` | Latency benchmark |
-| `make up` | docker compose up (API + MLflow UI on port 5000) |
+| `make up` | docker compose up (API + MLflow UI on port 5001; 5000 is taken by macOS AirPlay) |
 
 ## 7. Success criteria
 
