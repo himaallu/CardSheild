@@ -16,33 +16,33 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 
 ## Sprint 0 — Setup (10 min)
 
-- [ ] `pyproject.toml` with pinned deps: pandas, numpy, scikit-learn, lightgbm, mlflow, fastapi, uvicorn, pydantic, prometheus-client, evidently, httpx, pytest, ruff, mypy, matplotlib
-- [ ] Package skeleton matching the repo layout in `docs/PRD.md`
-- [ ] `.gitignore` (data/, mlruns/, mlflow.db, reports/, .venv/, __pycache__/)
-- [ ] `Makefile` with all targets from the PRD (stubs are fine for later sprints)
-- [ ] `scripts/download_data.py`: OpenML `data_id=1597`, save to `data/creditcard.csv`, assert 284,807 rows and 492 frauds
+- [x] `pyproject.toml` with pinned deps: pandas, numpy, scikit-learn, lightgbm, mlflow, fastapi, uvicorn, pydantic, prometheus-client, evidently, httpx, pytest, ruff, mypy, matplotlib
+- [x] Package skeleton matching the repo layout in `docs/PRD.md`
+- [x] `.gitignore` (data/, mlruns/, mlflow.db, reports/, .venv/, __pycache__/)
+- [x] `Makefile` with all targets from the PRD (stubs are fine for later sprints)
+- [x] `scripts/download_data.py`: original CSV (TensorFlow mirror, SHA-256 pinned; OpenML 1597 drops `Time`), save to `data/creditcard.csv`, assert 284,807 rows and 492 frauds
 
 **Check:** `make data` prints row and fraud counts that match. First commit.
 
 ## Sprint 1 — Training pipeline (30 min)
 
-- [ ] `data.py`: load, validate columns, time-based 60/20/20 split by `Time`
-- [ ] `threshold.py`: cost-based threshold search on validation (missed fraud = `Amount`, false alarm = `REVIEW_COST`)
-- [ ] `train.py`: logistic regression baseline + LightGBM (`scale_pos_weight`); log params, PR-AUC, ROC-AUC, precision/recall/F1 at threshold, PR curve PNG, confusion matrix, data hash to MLflow (`sqlite:///mlflow.db`)
-- [ ] Business-impact table on test: total cost for approve-all, best amount-threshold rule (tuned on validation), and the model; log to MLflow
-- [ ] Register best LightGBM as `cardshield`, set alias `champion`
-- [ ] `export.py`: write `artifacts/model/model.txt` + `metadata.json`
-- [ ] Tests: split has no time overlap; threshold function picks the cost minimum on a toy example; export writes both files
+- [x] `data.py`: load, validate columns, time-based 60/20/20 split by `Time`
+- [x] `threshold.py`: cost-based threshold search on validation (missed fraud = `Amount`, false alarm = `REVIEW_COST`)
+- [x] `train.py`: logistic regression baseline + LightGBM (`scale_pos_weight`); log params, PR-AUC, ROC-AUC, precision/recall/F1 at threshold, PR curve PNG, confusion matrix, data hash to MLflow (`sqlite:///mlflow.db`)
+- [x] Business-impact table on test: total cost for approve-all, best amount-threshold rule (tuned on validation), and the model; log to MLflow
+- [x] Register best LightGBM as `cardshield`, set alias `champion`
+- [x] `export.py`: write `artifacts/model/model.txt` + `metadata.json`
+- [x] Tests: split has no time overlap; threshold function picks the cost minimum on a toy example; export writes both files
 
 **Check:** `make train` prints a metrics table and the cost table (model cheaper than both baselines); `mlflow ui` shows 2 runs and the champion alias; `make test` green. Commit.
 
 ## Sprint 2 — Serving (25 min)
 
-- [ ] `schemas.py`: `Transaction` (Time, Amount ≥ 0, V1–V28, `extra="forbid"`), `ScoreResponse`, batch models
-- [ ] `model.py`: load artifact once; `predict_proba`; top-3 reasons from `pred_contrib=True` (feature, value, contribution)
-- [ ] `store.py`: SQLite prediction log
-- [ ] `app.py`: `/v1/score`, `/v1/score/batch` (≤ 1,000), `/healthz`, `/metrics` (Prometheus counter + latency histogram)
-- [ ] Tests with FastAPI TestClient: valid request → 200 with 3 reasons; missing field → 422; negative Amount → 422; batch over limit → 422; log row written
+- [x] `schemas.py`: `Transaction` (Time, Amount ≥ 0, V1–V28, `extra="forbid"`), `ScoreResponse`, batch models
+- [x] `model.py`: load artifact once; `predict_proba`; top-3 reasons from `pred_contrib=True` (feature, value, contribution)
+- [x] `store.py`: SQLite prediction log
+- [x] `app.py`: `/v1/score`, `/v1/score/batch` (≤ 1,000), `/healthz`, `/metrics` (Prometheus counter + latency histogram)
+- [x] Tests with FastAPI TestClient: valid request → 200 with 3 reasons; missing field → 422; negative Amount → 422; batch over limit → 422; log row written
 
 **Check:** `make serve`, open `/docs`, score one real fraud row from the test set and see a high probability with reasons. `make test` green. Commit.
 

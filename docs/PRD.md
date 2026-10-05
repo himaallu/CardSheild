@@ -63,8 +63,11 @@ enough to sit in the payment flow and transparent enough for analysts to trust.
 
 - Columns: `Time` (seconds since the first transaction), `Amount`, `V1`–`V28`
   (anonymised PCA components), `Class` (1 = fraud).
-- Download: OpenML (`sklearn.datasets.fetch_openml(data_id=1597)`, no login) or Kaggle
-  (`mlg-ulb/creditcardfraud`). The download script must verify 284,807 rows and 492 frauds.
+- Download: the original CSV from the TensorFlow mirror
+  (`storage.googleapis.com/download.tensorflow.org/data/creditcard.csv`, no login, SHA-256
+  pinned) or Kaggle (`mlg-ulb/creditcardfraud`). OpenML `data_id=1597` has identical values
+  but drops `Time`, so it can't support the time-based split. The download script must verify
+  284,807 rows and 492 frauds.
 - The raw CSV is never committed.
 
 **Honest limitation (state it in the README):** V1–V28 are anonymised PCA features, so no
