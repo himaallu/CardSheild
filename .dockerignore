@@ -1,0 +1,7 @@
+*
+!pyproject.toml
+!README.md
+!src/
+!artifacts/model/
+**/__pycache__
+**/*.egg-info

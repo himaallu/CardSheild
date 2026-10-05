@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    image: cardshield-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - predictions:/data  # SQLite prediction log survives restarts
+
+  mlflow:
+    build:
+      context: docker
+      dockerfile: mlflow.Dockerfile
+    image: cardshield-mlflow
+    ports:
+      - "5000:5000"
+    # mlflow.db stores absolute host paths for artifacts, so mount mlruns/ at the same path.
+    volumes:
+      - ./mlflow.db:/mlflow/mlflow.db
+      - ./mlruns:${PWD}/mlruns:ro
+    command: >
+      mlflow ui --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+
+volumes:
+  predictions:

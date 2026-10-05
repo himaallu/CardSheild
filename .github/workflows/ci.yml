@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[train,monitor,dev]"
+      - name: Lint (ruff + mypy)
+        run: make lint
+      # Synthetic fixture only (tests/conftest.py): the dataset is never downloaded in CI.
+      - name: Test
+        run: make test
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t cardshield-api .
+      - name: Smoke test /healthz
+        run: |
+          docker run -d --name api -p 8000:8000 cardshield-api
+          for _ in $(seq 30); do
+            body=$(curl -fsS localhost:8000/healthz) && break
+            sleep 1
+          done
+          echo "$body"
+          expected=$(python3 -c "import json; print(json.load(open('artifacts/model/metadata.json'))['model_version'])")
+          echo "$body" | grep -q '"model_loaded":true'
+          echo "$body" | grep -q "\"model_version\":\"$expected\""
+      - name: Container logs
+        if: always()
+        run: docker logs api || true

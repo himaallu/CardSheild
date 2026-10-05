@@ -1,5 +1,6 @@
 """Shared fixtures. Tests never need the real dataset: they use this synthetic frame."""
 
+import socket
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -28,6 +29,19 @@ def make_synthetic(n_rows: int = 2_000, fraud_rate: float = 0.02, seed: int = 0)
     frame[AMOUNT_COL] = rng.exponential(80.0, n_rows).round(2)
     frame[LABEL_COL] = labels
     return frame
+
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail any test that tries to reach the internet (e.g. downloading the dataset)."""
+    real_connect = socket.socket.connect
+
+    def guarded(sock: socket.socket, address: object) -> None:
+        if sock.family in (socket.AF_INET, socket.AF_INET6):
+            raise RuntimeError(f"network access blocked in tests: {address!r}")
+        real_connect(sock, address)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(socket.socket, "connect", guarded)
 
 
 @pytest.fixture
