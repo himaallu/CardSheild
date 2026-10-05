@@ -24,7 +24,7 @@ GitHub Actions.
 - `make serve` run the API on :8000
 - `make test` / `make lint`
 - `make replay` / `make replay-drift` / `make drift` / `make bench`
-- `make up` docker compose (API :8000, MLflow UI :5000)
+- `make up` docker compose (API :8000, MLflow UI :5001)
 
 ## Layout
 

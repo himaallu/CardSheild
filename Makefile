@@ -39,6 +39,8 @@ up:
 	@test -f mlflow.db || { echo "mlflow.db not found: run 'make train' first (compose mounts it for the MLflow UI)"; exit 1; }
 	@mkdir -p mlruns
 	docker compose up --build -d
+	@echo "API:       http://localhost:8000/docs"
+	@echo "MLflow UI: http://localhost:5001"
 
 down:
 	docker compose down
