@@ -57,9 +57,9 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 
 ## Sprint 4 — Monitoring and performance (20 min)
 
-- [ ] `scripts/replay.py`: send test rows to the API at a set rate; `--drift` multiplies `Amount` ×3 and shifts V14 and V17 for the second half
-- [ ] `monitoring/drift.py`: reference = sample of training data; current = prediction log; Evidently data-drift report to `reports/drift.html` + one-line summary. If Evidently errors after one quick fix attempt, use the PSI fallback
-- [ ] `scripts/bench.py`: async httpx load test, prints p50/p95/p99 and req/s for single and batch requests
+- [x] `scripts/replay.py`: send test rows to the API at a set rate; `--drift` multiplies `Amount` ×3 and shifts V14 and V17 for the second half
+- [x] `monitoring/drift.py`: reference = sample of validation-period data (training reference flags normal traffic: time-of-day shift); current = prediction log; Evidently data-drift report to `reports/drift.html` + one-line summary. If Evidently errors after one quick fix attempt, use the PSI fallback
+- [x] `scripts/bench.py`: async httpx load test, prints p50/p95/p99 and req/s for single and batch requests
 
 **Check:** normal replay → drift summary shows few drifted features; drifted replay → `Amount` flagged. Bench p95 < 50 ms. Save a screenshot of the drift report. Commit.
 

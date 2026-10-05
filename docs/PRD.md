@@ -106,7 +106,7 @@ not a production fraud model.
 | ID | Requirement |
 | --- | --- |
 | M1 | `scripts/replay.py` streams test-set rows to the API; `--drift` mode multiplies `Amount` by 3 and shifts two V features for the second half to simulate drift. |
-| M2 | `make drift` builds an Evidently data-drift report comparing a training reference sample to the logged traffic; saves HTML to `reports/` and prints a one-line summary (share of drifted features). |
+| M2 | `make drift` builds an Evidently data-drift report comparing a reference sample from the **validation** period to the logged traffic (a training-period reference flagged 24/29 features on normal test traffic, because the V features vary by time of day; `Time` itself is excluded); saves HTML to `reports/` and prints a one-line summary (share of drifted features). |
 | M3 | If the installed Evidently API misbehaves, fall back to a hand-written PSI per feature with the same summary output. Don't burn time fighting library versions. |
 
 ### Engineering (P0)
