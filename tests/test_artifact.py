@@ -28,4 +28,5 @@ def test_committed_artifact_loads_and_scores(legit_tx: dict[str, float]) -> None
 
 def test_network_is_blocked_in_tests() -> None:
     with pytest.raises(RuntimeError, match="network access"):
-        socket.create_connection(("storage.googleapis.com", 443), timeout=1)
+        # IP literal: no DNS lookup, so the guard is hit even on machines without DNS.
+        socket.create_connection(("192.0.2.1", 443), timeout=1)
