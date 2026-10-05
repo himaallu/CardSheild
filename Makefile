@@ -13,7 +13,7 @@ train:
 	$(PYTHON) -m cardshield.train
 
 serve:
-	@echo "make serve: not implemented yet (Sprint 2)"
+	$(PYTHON) -m uvicorn cardshield.serve.app:app --host 0.0.0.0 --port 8000
 
 test:
 	$(PYTHON) -m pytest

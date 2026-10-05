@@ -38,11 +38,11 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 
 ## Sprint 2 — Serving (25 min)
 
-- [ ] `schemas.py`: `Transaction` (Time, Amount ≥ 0, V1–V28, `extra="forbid"`), `ScoreResponse`, batch models
-- [ ] `model.py`: load artifact once; `predict_proba`; top-3 reasons from `pred_contrib=True` (feature, value, contribution)
-- [ ] `store.py`: SQLite prediction log
-- [ ] `app.py`: `/v1/score`, `/v1/score/batch` (≤ 1,000), `/healthz`, `/metrics` (Prometheus counter + latency histogram)
-- [ ] Tests with FastAPI TestClient: valid request → 200 with 3 reasons; missing field → 422; negative Amount → 422; batch over limit → 422; log row written
+- [x] `schemas.py`: `Transaction` (Time, Amount ≥ 0, V1–V28, `extra="forbid"`), `ScoreResponse`, batch models
+- [x] `model.py`: load artifact once; `predict_proba`; top-3 reasons from `pred_contrib=True` (feature, value, contribution)
+- [x] `store.py`: SQLite prediction log
+- [x] `app.py`: `/v1/score`, `/v1/score/batch` (≤ 1,000), `/healthz`, `/metrics` (Prometheus counter + latency histogram)
+- [x] Tests with FastAPI TestClient: valid request → 200 with 3 reasons; missing field → 422; negative Amount → 422; batch over limit → 422; log row written
 
 **Check:** `make serve`, open `/docs`, score one real fraud row from the test set and see a high probability with reasons. `make test` green. Commit.
 
