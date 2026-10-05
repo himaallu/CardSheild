@@ -1,7 +1,7 @@
 PYTHON ?= python
 SRC := src scripts tests
 
-.PHONY: install data train serve test lint replay replay-drift drift bench up
+.PHONY: install data train serve test lint replay replay-drift drift bench up down
 
 install:
 	$(PYTHON) -m pip install -e ".[train,monitor,dev]"
@@ -36,4 +36,7 @@ bench:
 	@echo "make bench: not implemented yet (Sprint 4)"
 
 up:
-	@echo "make up: not implemented yet (Sprint 3)"
+	docker compose up --build -d
+
+down:
+	docker compose down
