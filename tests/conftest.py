@@ -1,10 +1,20 @@
 """Shared fixtures. Tests never need the real dataset: they use this synthetic frame."""
 
+from collections.abc import Iterator
+from pathlib import Path
+
+import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
 
-from cardshield.config import AMOUNT_COL, LABEL_COL, TIME_COL, V_COLS
+from cardshield.config import AMOUNT_COL, INPUT_COLS, LABEL_COL, TIME_COL, V_COLS
+from cardshield.data import FEATURE_COLS, features
+from cardshield.export import export_model
+from cardshield.serve.app import create_app
+
+TEST_THRESHOLD = 0.5
 
 
 def make_synthetic(n_rows: int = 2_000, fraud_rate: float = 0.02, seed: int = 0) -> pd.DataFrame:
@@ -23,3 +33,35 @@ def make_synthetic(n_rows: int = 2_000, fraud_rate: float = 0.02, seed: int = 0)
 @pytest.fixture
 def synthetic_raw() -> pd.DataFrame:
     return make_synthetic()
+
+
+@pytest.fixture(scope="session")
+def model_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A tiny LightGBM trained on synthetic data, exported like the real champion."""
+    frame = make_synthetic(seed=1)
+    params = {"objective": "binary", "verbose": -1, "num_leaves": 8, "seed": 0}
+    booster = lgb.train(params, lgb.Dataset(features(frame), frame[LABEL_COL]), 30)
+    out = tmp_path_factory.mktemp("model")
+    meta = {"features": list(FEATURE_COLS), "threshold": TEST_THRESHOLD, "model_version": "test"}
+    return export_model(booster, meta, out)
+
+
+@pytest.fixture
+def client(model_dir: Path, tmp_path: Path) -> Iterator[TestClient]:
+    with TestClient(create_app(model_dir, tmp_path / "predictions.db")) as c:
+        yield c
+
+
+def _row(frame: pd.DataFrame, label: int) -> dict[str, float]:
+    row = frame[frame[LABEL_COL] == label].iloc[0]
+    return {c: float(row[c]) for c in INPUT_COLS}
+
+
+@pytest.fixture
+def legit_tx() -> dict[str, float]:
+    return _row(make_synthetic(seed=2), 0)
+
+
+@pytest.fixture
+def fraud_tx() -> dict[str, float]:
+    return _row(make_synthetic(seed=2), 1)
