@@ -1,0 +1,21 @@
+# Data and run outputs (never commit)
+data/
+mlruns/
+mlflow.db
+reports/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Serving
+*.sqlite
+*.sqlite3
+predictions.db
