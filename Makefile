@@ -24,16 +24,16 @@ lint:
 	$(PYTHON) -m mypy
 
 replay:
-	@echo "make replay: not implemented yet (Sprint 4)"
+	$(PYTHON) scripts/replay.py
 
 replay-drift:
-	@echo "make replay-drift: not implemented yet (Sprint 4)"
+	$(PYTHON) scripts/replay.py --drift
 
 drift:
-	@echo "make drift: not implemented yet (Sprint 4)"
+	$(PYTHON) -m cardshield.monitoring.drift
 
 bench:
-	@echo "make bench: not implemented yet (Sprint 4)"
+	$(PYTHON) scripts/bench.py
 
 up:
 	@test -f mlflow.db || { echo "mlflow.db not found: run 'make train' first (compose mounts it for the MLflow UI)"; exit 1; }

@@ -6,6 +6,8 @@ from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pandas as pd
+
 from cardshield.config import INPUT_COLS
 from cardshield.serve.model import Score
 
@@ -39,6 +41,16 @@ class PredictionStore:
         marks = ", ".join("?" * len(_COLS))
         with self._lock, self._conn:
             self._conn.executemany(f"INSERT INTO predictions ({cols}) VALUES ({marks})", records)
+
+    def recent(self, n: int) -> pd.DataFrame:
+        """The last `n` logged predictions, oldest first."""
+        with self._lock:
+            frame = pd.read_sql_query(
+                "SELECT * FROM (SELECT * FROM predictions ORDER BY id DESC LIMIT ?) ORDER BY id",
+                self._conn,
+                params=(n,),
+            )
+        return frame
 
     def count(self) -> int:
         with self._lock:
