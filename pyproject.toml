@@ -24,6 +24,7 @@ train = [
     "scikit-learn==1.9.1",
     "mlflow==3.16.1",
     "matplotlib==3.11.2",
+    "xgboost==3.4.1",
 ]
 monitor = [
     "evidently==0.7.23",
@@ -58,7 +59,7 @@ mypy_path = "src:scripts"
 files = ["src", "scripts", "tests"]
 
 [[tool.mypy.overrides]]
-module = ["lightgbm.*", "mlflow.*", "evidently.*", "sklearn.*"]
+module = ["lightgbm.*", "mlflow.*", "evidently.*", "sklearn.*", "xgboost.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

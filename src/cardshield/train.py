@@ -10,8 +10,10 @@ import lightgbm as lgb
 import mlflow
 import numpy as np
 import pandas as pd
+import xgboost as xgb
 from matplotlib.figure import Figure
 from mlflow.tracking import MlflowClient
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     average_precision_score,
@@ -63,7 +65,32 @@ LGBM_PARAMS: dict[str, Any] = {
     "bagging_freq": 1,
     "metric": "average_precision",
     "seed": SEED,
+    # Bit-identical model.txt across runs (multithreaded float sums otherwise vary).
+    "deterministic": True,
+    "force_row_wise": True,
     "verbose": -1,
+}
+# Comparison models (logged to MLflow, not registered). Settings mirror LightGBM's.
+XGB_PARAMS: dict[str, Any] = {
+    "n_estimators": 2000,
+    "learning_rate": 0.02,
+    "max_depth": 6,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "max_delta_step": 1.0,
+    "reg_lambda": 5.0,
+    "tree_method": "hist",
+    "eval_metric": "aucpr",
+    "early_stopping_rounds": 200,
+    "random_state": SEED,
+    "n_jobs": -1,
+}
+RF_PARAMS: dict[str, Any] = {
+    "n_estimators": 300,
+    "min_samples_leaf": 5,
+    "class_weight": "balanced_subsample",
+    "random_state": SEED,
+    "n_jobs": -1,
 }
 NUM_BOOST_ROUND = 2000
 EARLY_STOPPING = 200
@@ -132,7 +159,7 @@ def predict_lgbm(booster: lgb.Booster, x: pd.DataFrame) -> FloatArray:
 
 
 def fit_lgbm(x_tr: pd.DataFrame, y_tr: IntArray, x_va: pd.DataFrame, y_va: IntArray) -> lgb.Booster:
-    params = {**LGBM_PARAMS, "scale_pos_weight": float((y_tr == 0).sum() / (y_tr == 1).sum())}
+    params = {**LGBM_PARAMS, "scale_pos_weight": _pos_weight(y_tr)}
     train_set = lgb.Dataset(x_tr, y_tr)
     val_set = lgb.Dataset(x_va, y_va, reference=train_set)
     return lgb.train(
@@ -142,6 +169,25 @@ def fit_lgbm(x_tr: pd.DataFrame, y_tr: IntArray, x_va: pd.DataFrame, y_va: IntAr
         valid_sets=[val_set],
         callbacks=[lgb.early_stopping(EARLY_STOPPING, verbose=False)],
     )
+
+
+def fit_xgb(
+    x_tr: pd.DataFrame, y_tr: IntArray, x_va: pd.DataFrame, y_va: IntArray
+) -> xgb.XGBClassifier:
+    """Comparison model: same imbalance handling and stabilisers as LightGBM."""
+    model = xgb.XGBClassifier(**XGB_PARAMS, scale_pos_weight=_pos_weight(y_tr))
+    model.fit(x_tr, y_tr, eval_set=[(x_va, y_va)], verbose=False)
+    return model
+
+
+def fit_rf(x: pd.DataFrame, y: IntArray) -> RandomForestClassifier:
+    model = RandomForestClassifier(**RF_PARAMS)
+    model.fit(x, y)
+    return model
+
+
+def _pos_weight(y: IntArray) -> float:
+    return float((y == 0).sum() / (y == 1).sum())
 
 
 def cost_table(split: Split, val_proba: FloatArray, test_proba: FloatArray) -> pd.DataFrame:
@@ -169,7 +215,7 @@ def run_model(
     test_proba: FloatArray,
     params: dict[str, Any],
     tags: dict[str, str],
-) -> tuple[CostResult, dict[str, float]]:
+) -> tuple[CostResult, dict[str, float], dict[str, float]]:
     """Log one active MLflow run: threshold from validation, metrics on validation and test."""
     _, y_va, amt_va = _xy(split.val)
     _, y_te, amt_te = _xy(split.test)
@@ -197,7 +243,16 @@ def run_model(
         confusion_figure(y_te, test_proba, chosen.threshold, f"{name} @ {chosen.threshold:.3f}"),
         "confusion_matrix.png",
     )
-    return chosen, test_m
+    row = {
+        "val_pr_auc": val_m["pr_auc"],
+        "val_cost": chosen.cost,
+        "test_pr_auc": test_m["pr_auc"],
+        "test_precision": test_m["precision"],
+        "test_recall": test_m["recall"],
+        "test_cost": test_cost.cost,
+        "threshold": chosen.threshold,
+    }
+    return chosen, test_m, row
 
 
 def main() -> None:
@@ -218,11 +273,29 @@ def main() -> None:
     with mlflow.start_run(run_name="logreg"):
         lr = fit_logreg(x_tr, y_tr)
         val_p, test_p = lr.predict_proba(x_va)[:, 1], lr.predict_proba(x_te)[:, 1]
-        chosen, test_m = run_model(
+        _, _, summary["logreg"] = run_model(
             "LogReg", split, val_p, test_p, {"model": "logreg", "class_weight": "balanced"}, tags
         )
         mlflow.sklearn.log_model(lr, name="model")
-        summary["logreg"] = {**test_m, "threshold": chosen.threshold}
+
+    with mlflow.start_run(run_name="random_forest"):
+        rf = fit_rf(x_tr, y_tr)
+        val_p, test_p = rf.predict_proba(x_va)[:, 1], rf.predict_proba(x_te)[:, 1]
+        params = {"model": "random_forest", **RF_PARAMS}
+        _, _, summary["random_forest"] = run_model(
+            "RandomForest", split, val_p, test_p, params, tags
+        )
+
+    with mlflow.start_run(run_name="xgboost"):
+        xgbm = fit_xgb(x_tr, y_tr, x_va, y_va)
+        val_p, test_p = xgbm.predict_proba(x_va)[:, 1], xgbm.predict_proba(x_te)[:, 1]
+        params = {
+            "model": "xgboost",
+            **XGB_PARAMS,
+            "best_iteration": xgbm.best_iteration,
+            "scale_pos_weight": round(_pos_weight(y_tr), 3),
+        }
+        _, _, summary["xgboost"] = run_model("XGBoost", split, val_p, test_p, params, tags)
 
     with mlflow.start_run(run_name="lightgbm") as run:
         booster = fit_lgbm(x_tr, y_tr, x_va, y_va)
@@ -231,16 +304,17 @@ def main() -> None:
             "model": "lightgbm",
             **LGBM_PARAMS,
             "best_iteration": booster.best_iteration,
-            "scale_pos_weight": round(float((y_tr == 0).sum() / (y_tr == 1).sum()), 3),
+            "scale_pos_weight": round(_pos_weight(y_tr), 3),
         }
-        chosen, test_m = run_model("LightGBM", split, val_p, test_p, params, tags)
+        chosen, test_m, summary["lightgbm"] = run_model(
+            "LightGBM", split, val_p, test_p, params, tags
+        )
         costs = cost_table(split, val_p, test_p)
         mlflow.log_table(costs.reset_index(names="policy"), "cost_table.json")
         mlflow.log_metrics({f"test_cost_{p}": float(c) for p, c in costs["cost"].items()})
         info = mlflow.lightgbm.log_model(booster, name="model", registered_model_name=MODEL_NAME)
         version = str(info.registered_model_version)
         MlflowClient().set_registered_model_alias(MODEL_NAME, CHAMPION_ALIAS, version)
-        summary["lightgbm"] = {**test_m, "threshold": chosen.threshold}
 
     export_model(
         booster,
@@ -260,7 +334,7 @@ def main() -> None:
     )
 
     pd.set_option("display.width", 120)
-    print("\nTest metrics (threshold chosen on validation by cost):")
+    print("\nModel comparison (threshold chosen on validation by cost; val_* drives choices):")
     print(pd.DataFrame(summary).T.round(4).to_string())
     print("\nTest-period cost by policy:")
     print(costs.round(2).to_string())
