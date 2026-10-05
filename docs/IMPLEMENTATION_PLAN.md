@@ -49,7 +49,7 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 ## Sprint 3 — Docker and CI (20 min)
 
 - [x] `Dockerfile`: python slim, non-root user, install deps, copy `src/` and `artifacts/model/`, run uvicorn, `HEALTHCHECK` on `/healthz`
-- [ ] `docker-compose.yml`: `api` (port 8000, volume for the SQLite log) and `mlflow` UI (port 5001 on the host)
+- [x] `docker-compose.yml`: `api` (port 8000, volume for the SQLite log) and `mlflow` UI (port 5001 on the host)
 - [x] `.github/workflows/ci.yml`: install, ruff, pytest (synthetic fixture only, no dataset download), docker build
 - [x] `tests/conftest.py` synthetic fixture with the real schema; a tiny model trained on it for API tests in CI
 
