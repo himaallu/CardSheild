@@ -26,13 +26,13 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 
 ## Sprint 1 — Training pipeline (30 min)
 
-- [ ] `data.py`: load, validate columns, time-based 60/20/20 split by `Time`
-- [ ] `threshold.py`: cost-based threshold search on validation (missed fraud = `Amount`, false alarm = `REVIEW_COST`)
-- [ ] `train.py`: logistic regression baseline + LightGBM (`scale_pos_weight`); log params, PR-AUC, ROC-AUC, precision/recall/F1 at threshold, PR curve PNG, confusion matrix, data hash to MLflow (`sqlite:///mlflow.db`)
-- [ ] Business-impact table on test: total cost for approve-all, best amount-threshold rule (tuned on validation), and the model; log to MLflow
-- [ ] Register best LightGBM as `cardshield`, set alias `champion`
-- [ ] `export.py`: write `artifacts/model/model.txt` + `metadata.json`
-- [ ] Tests: split has no time overlap; threshold function picks the cost minimum on a toy example; export writes both files
+- [x] `data.py`: load, validate columns, time-based 60/20/20 split by `Time`
+- [x] `threshold.py`: cost-based threshold search on validation (missed fraud = `Amount`, false alarm = `REVIEW_COST`)
+- [x] `train.py`: logistic regression baseline + LightGBM (`scale_pos_weight`); log params, PR-AUC, ROC-AUC, precision/recall/F1 at threshold, PR curve PNG, confusion matrix, data hash to MLflow (`sqlite:///mlflow.db`)
+- [x] Business-impact table on test: total cost for approve-all, best amount-threshold rule (tuned on validation), and the model; log to MLflow
+- [x] Register best LightGBM as `cardshield`, set alias `champion`
+- [x] `export.py`: write `artifacts/model/model.txt` + `metadata.json`
+- [x] Tests: split has no time overlap; threshold function picks the cost minimum on a toy example; export writes both files
 
 **Check:** `make train` prints a metrics table and the cost table (model cheaper than both baselines); `mlflow ui` shows 2 runs and the champion alias; `make test` green. Commit.
 

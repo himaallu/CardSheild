@@ -10,7 +10,7 @@ data:
 	$(PYTHON) scripts/download_data.py
 
 train:
-	@echo "make train: not implemented yet (Sprint 1)"
+	$(PYTHON) -m cardshield.train
 
 serve:
 	@echo "make serve: not implemented yet (Sprint 2)"
