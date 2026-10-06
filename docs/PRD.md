@@ -151,7 +151,7 @@ flowchart LR
   end
   subgraph Monitor["Monitoring"]
     LOG --> DR[Evidently drift report]
-    REF[Training reference sample] --> DR
+    REF[Validation reference sample] --> DR
     DR --> RPT[reports/drift.html]
   end
 ```
@@ -227,9 +227,10 @@ cardshield/
 - [ ] CI green; Docker image builds and serves.
 - [ ] README has real metrics, latency, drift screenshot and the limitations note.
 
-## 8. Resume bullet (fill in real numbers)
+## 8. Resume bullet
 
-> Built CardShield, a real-time fraud scoring service that cut simulated fraud cost by __% vs an amount-threshold rule: LightGBM with time-based validation and
-> cost-optimised threshold (PR-AUC __, recall __ at precision __), MLflow tracking and registry,
-> FastAPI serving with per-prediction SHAP reasons at p95 __ ms, Evidently drift monitoring,
-> Docker and GitHub Actions CI.
+> Built CardShield, a real-time fraud scoring service that cut simulated fraud cost by 65% vs an
+> amount-threshold rule: LightGBM with time-based validation and cost-optimised threshold
+> (PR-AUC 0.80, recall 0.80 at precision 0.55), MLflow tracking and registry, FastAPI serving
+> with per-prediction SHAP reasons at p95 13 ms, Evidently drift monitoring, Docker and GitHub
+> Actions CI.

@@ -65,9 +65,9 @@ Times are hard limits: if a sprint runs over, cut its P1 items and move on.
 
 ## Sprint 5 — README and ship (15 min)
 
-- [ ] README: problem and objective (from the PRD), cost-saved table, Mermaid architecture diagram (from the PRD), real metrics table, latency table, drift screenshot, "Run it" commands, design decisions, limitations (PCA features)
-- [ ] Fill the resume bullet in `docs/PRD.md` with real numbers
-- [ ] Final `make lint && make test`, push, CI green
+- [x] README: problem and objective (from the PRD), cost-saved table, Mermaid architecture diagram (from the PRD), real metrics table, latency table, drift screenshot, "Run it" commands, design decisions, limitations (PCA features)
+- [x] Fill the resume bullet in `docs/PRD.md` with real numbers
+- [x] Final `make lint && make test`, push, CI green
 
 **Check:** a stranger could clone and run it from the README alone.
 
